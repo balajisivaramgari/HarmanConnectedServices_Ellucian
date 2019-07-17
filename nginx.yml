@@ -1,0 +1,55 @@
+---
+-
+  hosts: WebServers
+  tasks:
+    - name: Configuring the Nginx Repos
+      copy: "src=nginx.repo dest=/etc/yum.repos.d/nginx.repo"
+
+    - name: Installing Nginx on the remote WebServers
+      yum: "name=nginx state=present"
+
+    - name: ensure a list of packages installed
+      yum:
+        name: "{{ packages }}"
+      vars:
+        packages:
+        - wget
+        - unzip
+
+    - copy: "src=nginx.conf dest=/etc/nginx/nginx.conf mode=0664"
+      name: Copy the custom nginx.conf file
+
+    - name: ansible create directory example
+      file:
+        path: /var/www/html
+        state: directory
+
+    - name: ansible create directory example
+      file:
+        path: /root/cacerts/
+        state: directory
+
+    - name: Copy the Self-Signed SSL Certificates
+      copy: "src=server.key dest=/root/cacerts/server.key"
+
+    - name: Copy the Self-Signed SSL Certificates
+      copy: "src=server.crt dest=/root/cacerts/server.crt"
+
+    - name: Deploy the Static Application static.zip
+      get_url:
+        url: https://thoughtworkshackerranker.s3.ap-south-1.amazonaws.com/static.zip
+        dest: /var/www/html/
+
+    - name: Starting httpd service
+#      shell: "systemctl start nginx.service"
+      command: nginx
+
+#####SSL Cerficates for Apache
+#   - copy: "src=/etc/httpd/conf/httpd.conf dest=/etc/httpd/conf/httpd.conf mode=0644"
+#     name: "Copy the custom httpd.conf file with SSL Self-Signed Certificates"
+#   - copy: "src=/root/cacerts/server.crt dest=/root/cacerts/server.crt"
+#     name: "Copy the SSL Server certificate file"
+#   - copy: "src=/root/cacerts/server.key dest=/root/cacerts/server.key"
+#     name: "Copy the Server Key file"
+#   - name: restart httpd
+#     service: name=httpd state=restarted

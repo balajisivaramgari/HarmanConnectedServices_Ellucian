@@ -1,0 +1,72 @@
+---
+- hosts: AppServers
+  tasks:
+#    - name: Download Java JDK from S3
+ #     get_url:
+ #       url: https://thoughtworkshackerranker.s3.ap-south-1.amazonaws.com/jdk-8u201-linux-i586.tar.gz
+ #       dest: /opt/jdk-8u201-linux-i586.tar.gz
+ #   - name: install Java JRE rpm from a local file
+ #     unarchive:
+ #       src: /opt/jdk-8u201-linux-i586.tar.gz
+ #       dest: /opt/
+ #       remote_src: yes
+    - name: Create Directory for Tomcat
+      file:
+        path: /opt/tomcat8
+        state: directory
+
+
+    - name: Create Directory for Tomcat JKS file
+      file:
+        path: /root/ThroughWorks/ansible/JavaTomcat/
+        state: directory
+
+    - name: Install requried Dependencies
+      yum:
+        name:
+          - gcc*
+          - glibc*
+          - java
+        state: present
+#    - name: Rename the Java Directory
+#      command: mv /opt/jdk1.8.0_201 /opt/java8
+    - name: Tomcat Installation
+      get_url:
+        url: http://apachemirror.wuchna.com/tomcat/tomcat-8/v8.5.43/bin/apache-tomcat-8.5.43.tar.gz
+        dest: /opt/apache-tomcat-8.5.43.tar.gz
+    - name: Extract Tomcat tar file
+      unarchive:
+        src: /opt/apache-tomcat-8.5.43.tar.gz
+        dest: /opt/tomcat8
+        remote_src: yes
+    - name: Rename apache-tomcat-8.5.43 to Tomcat_Thoughworks
+      command: mv /opt/tomcat8/apache-tomcat-8.5.43 /opt/tomcat8/Tomcat_Thoughtworks
+
+    - name: Deploy the Application
+      get_url:
+        url: https://thoughtworkshackerranker.s3.ap-south-1.amazonaws.com/companyNews.war
+        dest: /opt/tomcat8/Tomcat_Thoughtworks/webapps/
+
+    - name: Copy the Java Keystore (jks) file
+      copy: "src=keystore.jks dest=/root/ThroughWorks/ansible/JavaTomcat/"
+
+    - name: Copy Custom Server.xml file
+      copy: "src=server.xml dest=/opt/tomcat8/Tomcat_Thoughtworks/conf/server.xml"
+
+    - name: Create Directory for Tomcat
+      file:
+        path: /opt/tomcat8/Tomcat_Thoughtworks/webapps/images/
+        state: directory
+
+    - name: Create Directory for Tomcat
+      file:
+        path: /opt/tomcat8/Tomcat_Thoughtworks/webapps/styles/
+        state: directory
+
+
+
+#    - name: Starting tomcat process
+#      shell: "systemctl start nginx.service"
+#      command: sh /opt/tomcat8/Tomcat_Thoughtworks/bin/catalina.sh start
+
+#    - script: /opt/tomcat8/Tomcat_Thoughtworks/bin/startup.sh
